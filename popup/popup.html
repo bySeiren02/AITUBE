@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI YouTube 쇼츠 분석기</title>
+    <style>
+        body {
+            width: 350px;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            background: #f5f5f5;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .logo-icon {
+            font-size: 32px;
+            margin-right: 8px;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid #2196F3;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-value {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .status-good {
+            color: #4CAF50;
+        }
+        
+        .status-warning {
+            color: #FF9800;
+        }
+        
+        .status-bad {
+            color: #f44336;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+        
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .version {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .settings-group {
+            margin-bottom: 16px;
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .settings-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            margin-left: 12px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .toggle-slider:after {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            right: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        input:checked + .toggle-slider:after {
+            transform: translateX(-26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <span class="logo-icon">🤖</span>AI YouTube 쇼츠 분석기
+    </div>
+    
+    <div class="status-card">
+        <div class="status-title">확장 상태</div>
+        
+        <div class="status-item">
+            <span>분석 상태</span>
+            <span class="status-value status-good" id="analysis-status">정상</span>
+        </div>
+        
+        <div class="status-item">
+            <span>서버 연결</span>
+            <span class="status-value status-good" id="server-status">연결됨</span>
+        </div>
+        
+        <div class="status-item">
+            <span>캐시된 결과</span>
+            <span class="status-value" id="cached-count">0</span>
+        </div>
+        
+        <div class="status-item">
+            <span>마지막 횟과</span>
+            <span class="status-value" id="last-analysis">없음</span>
+        </div>
+    </div>
+    
+    <div class="settings-group">
+        <div class="status-title">설정</div>
+        
+        <label class="settings-label">
+            자동 분석
+            <label class="toggle-switch">
+                <input type="checkbox" id="auto-analyze" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </label>
+        
+        <label class="settings-label">
+            분석 알림
+            <label class="toggle-switch">
+                <input type="checkbox" id="enable-notifications" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </label>
+        
+        <label class="settings-label">
+            API 엔드포인트
+            <input type="text" class="settings-input" id="api-endpoint" placeholder="http://localhost:8000/api/analyze">
+        </label>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="clear-cache">캐시 정리</button>
+            <button class="btn btn-secondary" id="check-server">서버 상태 확인</button>
+            <button class="btn btn-secondary" id="reset-settings">기본 설정으로</button>
+        </div>
+    </div>
+    
+    <div class="version">
+        Version 1.0.0
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
