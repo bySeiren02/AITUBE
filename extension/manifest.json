@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI YouTube 쇼츠 분석기",
+  "name": "AITUBE",
   "version": "1.0.0",
   "description": "YouTube 쇼츠의 AI 영상 판독 결과를 실시간으로 보여줍니다",
   
