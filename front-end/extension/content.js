@@ -353,7 +353,7 @@ class VideoFrameCapture {
 // API 통신 모듈
 class APIAnalyzer {
   constructor() {
-    this.apiEndpoint = 'http://localhost:8000/api/analyze';
+    this.apiEndpoint = 'http://localhost:8005/api/analyze';
     this.timeout = 30000; // 30초 타임아웃
     this.maxRetries = 2;
     this.isAnalyzing = false;
@@ -364,7 +364,7 @@ class APIAnalyzer {
   async loadSettings() {
     try {
       const settings = await chrome.storage.local.get({
-        apiEndpoint: 'http://localhost:8000/api/analyze'
+        apiEndpoint: 'http://localhost:8005/api/analyze'
       });
       if (settings.apiEndpoint) {
         this.apiEndpoint = settings.apiEndpoint;
@@ -1258,13 +1258,13 @@ async setupForAnalysis() {
     try {
       const settings = await chrome.storage.local.get({
         autoAnalyze: true,
-        apiEndpoint: 'http://localhost:8000/api/analyze',
+        apiEndpoint: 'http://localhost:8005/api/analyze',
         enableNotifications: true
       });
       
       return {
         autoAnalyze: settings.autoAnalyze || true,
-        apiEndpoint: settings.apiEndpoint || 'http://localhost:8000/api/analyze',
+        apiEndpoint: settings.apiEndpoint || 'http://localhost:8005/api/analyze',
         enableNotifications: settings.enableNotifications !== false
       };
     } catch (error) {
@@ -1277,7 +1277,7 @@ async setupForAnalysis() {
   getDefaultSettings() {
     return {
       autoAnalyze: true,
-      apiEndpoint: 'http://localhost:8000/api/analyze',
+      apiEndpoint: 'http://localhost:8005/api/analyze',
       enableNotifications: true
     };
   }

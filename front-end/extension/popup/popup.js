@@ -33,7 +33,7 @@ async function loadSettings() {
     const settings = await chrome.storage.local.get({
       autoAnalyze: true,
       enableNotifications: true,
-      apiEndpoint: 'http://localhost:8000/api/analyze',
+      apiEndpoint: 'http://localhost:8005/api/analyze',
       autoAnalyzeDelay: 2000,
       maxRetryCount: 3
     });
@@ -59,7 +59,7 @@ function updateUI(settings) {
   }
   
   if (apiEndpoint) {
-    apiEndpoint.value = settings.apiEndpoint || 'http://localhost:8000/api/analyze';
+    apiEndpoint.value = settings.apiEndpoint || 'http://localhost:8005/api/analyze';
   }
 }
 
@@ -251,7 +251,7 @@ function getDefaultSettings() {
   return {
     autoAnalyze: true,
     enableNotifications: true,
-    apiEndpoint: 'http://localhost:8000/api/analyze',
+    apiEndpoint: 'http://localhost:8005/api/analyze',
     autoAnalyzeDelay: 2000,
     maxRetryCount: 3
   };

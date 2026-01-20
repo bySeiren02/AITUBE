@@ -30,7 +30,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       extensionStatus: extensionStatus,
       autoAnalyze: true,
       enableNotifications: true,
-      apiEndpoint: 'http://localhost:8000/api/analyze',
+      apiEndpoint: 'http://localhost:8005/api/analyze',
       autoAnalyzeDelay: 2000,
       maxRetryCount: 3
     });
@@ -255,7 +255,7 @@ async function checkServerHealth() {
   try {
     // API 엔드포인트 설정
     const result = await chrome.storage.local.get('apiEndpoint');
-    const apiEndpoint = result.apiEndpoint || 'http://localhost:8000/api/analyze';
+    const apiEndpoint = result.apiEndpoint || 'http://localhost:8005/api/analyze';
     
     const response = await fetch(`${apiEndpoint}/status`, {
       method: 'GET',
