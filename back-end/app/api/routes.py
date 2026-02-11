@@ -42,13 +42,15 @@ async def analyze_images(files: List[UploadFile] = File(...)):
                 detail="Please provide 1-5 image files (2-3 recommended)"
             )
         
+        ALLOWED_CONTENT_TYPES = {'image/jpeg', 'image/png', 'image/bmp'}
+
         # Process uploaded files
         images = []
         for file in files:
-            if not file.content_type or not file.content_type.startswith('image/'):
+            if not file.content_type or file.content_type not in ALLOWED_CONTENT_TYPES:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"File {file.filename} is not an image"
+                    detail=f"File {file.filename} has unsupported type '{file.content_type}'. Allowed: jpeg, png, bmp"
                 )
             
             contents = await file.read()
@@ -126,7 +128,7 @@ async def perform_analysis(images: List[np.ndarray]) -> Dict[str, Any]:
         )
         
         result["ai_probability"] = round(ai_probability, 3)
-        result["is_ai_generated"] = ai_probability > 0.6
+        result["is_ai_generated"] = ai_probability > Config.AI_DETECTION_THRESHOLD
         
         # 6. Set confidence level
         if ai_probability < 0.3:

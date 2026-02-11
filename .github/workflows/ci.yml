@@ -1,0 +1,33 @@
+name: Backend CI
+on:
+  push:
+    branches: [main, develop]
+    paths: ['back-end/**']
+  pull_request:
+    branches: [main]
+    paths: ['back-end/**']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back-end
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('back-end/requirements.txt') }}
+      - run: pip install -r requirements.txt
+      - run: pip install pytest httpx pytest-asyncio
+      - run: pytest tests/ -v --tb=short
+        env:
+          USE_REAL_AI_MODEL: "False"
+      - run: python bench_profile.py

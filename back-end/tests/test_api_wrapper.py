@@ -3,8 +3,6 @@ import sys
 from PIL import Image
 from fastapi.testclient import TestClient
 
-# Ensure main app imports
-sys.path.append('C:\\c\\Users\\INFOTECH\\jjh\\realCheck')
 from main import app
 
 client = TestClient(app)

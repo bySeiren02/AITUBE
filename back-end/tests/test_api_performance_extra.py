@@ -4,7 +4,6 @@ from PIL import Image
 import io
 import sys
 
-sys.path.append('C:\\c\\Users\\INFOTECH\\jjh\\realCheck')
 from main import app
 
 client = TestClient(app)

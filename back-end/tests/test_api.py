@@ -85,6 +85,68 @@ class TestAPI:
         assert isinstance(data["recommendations"], list)
         assert isinstance(data["limitations"], list)
 
+class TestValidation:
+    def test_file_too_large(self):
+        from app.config import Config
+        oversized = io.BytesIO(b'\xff\xd8\xff' + b'\x00' * (Config.MAX_FILE_SIZE + 1))
+        files = [('files', ('big.jpg', oversized, 'image/jpeg'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+        assert "too large" in response.json()["detail"]
+
+    def test_six_files_rejected(self):
+        files = []
+        for i in range(6):
+            img = Image.new('RGB', (10, 10), color='blue')
+            buf = io.BytesIO()
+            img.save(buf, format='JPEG')
+            buf.seek(0)
+            files.append(('files', (f'img_{i}.jpg', buf, 'image/jpeg')))
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+        assert "1-5 image files" in response.json()["detail"]
+
+    def test_video_content_type_rejected(self):
+        files = [('files', ('clip.mp4', io.BytesIO(b'\x00' * 100), 'video/mp4'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+        assert "unsupported type" in response.json()["detail"]
+
+    def test_gif_content_type_rejected(self):
+        files = [('files', ('anim.gif', io.BytesIO(b'GIF89a' + b'\x00' * 50), 'image/gif'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+        assert "unsupported type" in response.json()["detail"]
+
+    def test_corrupt_jpeg_bytes_rejected(self):
+        files = [('files', ('corrupt.jpg', io.BytesIO(b'\xff\xd8\xff' + b'\xde\xad\xbe\xef' * 10), 'image/jpeg'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+        assert "Invalid image file" in response.json()["detail"]
+
+    def test_png_format_accepted(self):
+        img = Image.new('RGB', (50, 50), color=(0, 128, 255))
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        files = [('files', ('test.png', buf, 'image/png'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 200
+        assert "ai_probability" in response.json()
+
+    def test_mixed_valid_invalid_rejected(self):
+        valid_img = Image.new('RGB', (50, 50), color='green')
+        valid_buf = io.BytesIO()
+        valid_img.save(valid_buf, format='JPEG')
+        valid_buf.seek(0)
+        files = [
+            ('files', ('ok.jpg', valid_buf, 'image/jpeg')),
+            ('files', ('bad.gif', io.BytesIO(b'GIF89a'), 'image/gif')),
+        ]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 400
+
+
 class TestPerformance:
     def test_analysis_speed(self):
         """Test that analysis completes within the timeout"""

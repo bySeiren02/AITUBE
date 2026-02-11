@@ -35,18 +35,15 @@ app.add_middleware(
 # Include API routes
 try:
     from app.api.routes import router as api_router
-    from app.models.ai_adapter import create_ai_model
-    ai_model = create_ai_model(use_real=Config.USE_REAL_AI_MODEL)
     app.include_router(api_router, prefix="/api")
     logger.info("API routes loaded successfully")
 except Exception as e:
     logger.error(f"Could not import API routes - using mock endpoints: {e}")
-    ai_model = None
-    
+
     @app.get("/api/health")
     async def health_check():
         return {"status": "healthy", "model_loaded": False}
-    
+
     @app.get("/api/")
     async def api_root():
         return {
@@ -87,10 +84,12 @@ async def startup_event():
 async def shutdown_event():
     logger.info("AITUBE AI Detection API shutting down...")
     try:
-        if ai_model:
-            ai_model.cleanup()
-    except:
-        pass
+        from app.api.routes import get_ai_model
+        model = get_ai_model()
+        if model:
+            model.cleanup()
+    except Exception as e:
+        logger.warning(f"Cleanup warning: {e}")
 
 if __name__ == "__main__":
     uvicorn.run(

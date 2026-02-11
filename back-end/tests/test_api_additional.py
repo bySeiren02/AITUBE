@@ -44,6 +44,21 @@ class TestAPIAdditional:
         assert "ai_probability" in data
         assert isinstance(data["ai_probability"], (int, float))
 
+    def test_analyze_endpoint_four_images(self):
+        files = []
+        for i in range(4):
+            img = Image.new('RGB', (200, 200), color=(i*40, i*30, 80))
+            buf = io.BytesIO()
+            img.save(buf, format='JPEG')
+            buf.seek(0)
+            files.append(('files', (f'four_{i}.jpg', buf, 'image/jpeg')))
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 200
+        data = response.json()
+        assert "analysis_details" in data
+        assert "ai_probability" in data
+        assert isinstance(data["ai_probability"], (int, float))
+
     def test_analyze_endpoint_five_images(self):
         files = []
         for i in range(5):
@@ -58,3 +73,39 @@ class TestAPIAdditional:
         assert "analysis_details" in data
         assert "ai_probability" in data
         assert isinstance(data["ai_probability"], (int, float))
+
+    def test_processing_time_within_timeout(self):
+        from app.config import Config
+        img = Image.new('RGB', (200, 200), color=(100, 150, 200))
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG')
+        buf.seek(0)
+        files = [('files', ('timing.jpg', buf, 'image/jpeg'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 200
+        data = response.json()
+        assert "total_processing_time" in data
+        # In mock mode, total time should be well within ANALYSIS_TIMEOUT
+        assert data["total_processing_time"] < Config.ANALYSIS_TIMEOUT
+
+    def test_png_format_accepted(self):
+        img = Image.new('RGB', (100, 100), color=(200, 100, 50))
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        files = [('files', ('test.png', buf, 'image/png'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 200
+        data = response.json()
+        assert "ai_probability" in data
+
+    def test_bmp_format_accepted(self):
+        img = Image.new('RGB', (50, 50), color=(0, 200, 100))
+        buf = io.BytesIO()
+        img.save(buf, format='BMP')
+        buf.seek(0)
+        files = [('files', ('test.bmp', buf, 'image/bmp'))]
+        response = client.post("/api/analyze", files=files)
+        assert response.status_code == 200
+        data = response.json()
+        assert "ai_probability" in data

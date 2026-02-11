@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 # Real AIModel implementation (heavy dependencies) import path
 try:
     from app.models.ai_detector import AIModel
-except Exception:
+except ImportError:
     AIModel = None  # Will be loaded lazily if real model is requested
 
 
