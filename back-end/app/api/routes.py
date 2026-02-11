@@ -18,7 +18,11 @@ _ai_model = None
 def get_ai_model():
     global _ai_model
     if _ai_model is None:
-        _ai_model = create_ai_model(use_real=Config.USE_REAL_AI_MODEL)
+        # AI_MODEL_TYPE 우선, USE_REAL_AI_MODEL 하위호환
+        model_type = Config.AI_MODEL_TYPE
+        if model_type == "mock" and Config.USE_REAL_AI_MODEL:
+            model_type = "opencv"
+        _ai_model = create_ai_model(model_type=model_type)
     return _ai_model
 
 router = APIRouter()
@@ -86,6 +90,23 @@ async def analyze_images(files: List[UploadFile] = File(...)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+def _get_limitations() -> list:
+    model_type = Config.AI_MODEL_TYPE
+    if model_type == "clip":
+        return [
+            "CLIP zero-shot classification (~85% accuracy)",
+            "May miss sophisticated deepfakes not in training distribution",
+            "DCT frequency analysis is supplementary",
+            "Animal content detection is CLIP-based heuristic",
+        ]
+    return [
+        "Speed prioritized over accuracy for MVP",
+        "Limited AI model training data",
+        "May miss sophisticated deepfakes",
+        "Animal content detection is heuristic-based",
+    ]
+
+
 async def perform_analysis(images: List[np.ndarray]) -> Dict[str, Any]:
     """Perform comprehensive AI detection analysis"""
     # Lazy import of typing inside function for type hints compatibility
@@ -96,12 +117,7 @@ async def perform_analysis(images: List[np.ndarray]) -> Dict[str, Any]:
         "confidence_level": "low",
         "analysis_details": {},
         "recommendations": [],
-        "limitations": [
-            "Speed prioritized over accuracy for MVP",
-            "Limited AI model training data",
-            "May miss sophisticated deepfakes",
-            "Animal content detection is heuristic-based"
-        ]
+        "limitations": _get_limitations()
     }
     
     try:

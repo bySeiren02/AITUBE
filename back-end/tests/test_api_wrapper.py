@@ -23,7 +23,7 @@ class DummyAdapter:
 def test_api_uses_ai_adapter_wrapper(monkeypatch):
     # Patch the factory in the API route to return DummyAdapter
     import app.api.routes as routes
-    monkeypatch.setattr(routes, 'create_ai_model', lambda use_real=False: DummyAdapter())
+    monkeypatch.setattr(routes, 'create_ai_model', lambda **kwargs: DummyAdapter())
     # Reset internal lazy model so wrapper is recreated
     if hasattr(routes, '_ai_model'):
         routes._ai_model = None

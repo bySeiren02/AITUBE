@@ -14,6 +14,11 @@ class Config:
     ANALYSIS_TIMEOUT = 2.0  # seconds
     USE_REAL_AI_MODEL = os.getenv("USE_REAL_AI_MODEL", "False").lower() == "true"
 
+    # AI model type: "mock", "opencv", "clip"
+    AI_MODEL_TYPE = os.getenv("AI_MODEL_TYPE", "mock")
+    CLIP_DEVICE = os.getenv("CLIP_DEVICE", "cpu")
+    CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "openai/clip-vit-base-patch32")
+
     LOG_LEVEL = logging.INFO if not DEBUG else logging.DEBUG
 
     @classmethod
@@ -26,4 +31,7 @@ class Config:
             "ai_threshold": cls.AI_DETECTION_THRESHOLD,
             "timeout": cls.ANALYSIS_TIMEOUT,
             "use_real_ai_model": cls.USE_REAL_AI_MODEL,
+            "ai_model_type": cls.AI_MODEL_TYPE,
+            "clip_device": cls.CLIP_DEVICE,
+            "clip_model_name": cls.CLIP_MODEL_NAME,
         }
